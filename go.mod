@@ -18,14 +18,18 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/natefinch/godocgo v0.0.0-20160109030932-eb5b06972700 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
 	github.com/splode/fname v0.3.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	github.com/yuin/goldmark v1.5.3 // indirect
 	golang.org/x/crypto v0.2.0 // indirect
+	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/tools v0.3.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.4.4 // indirect

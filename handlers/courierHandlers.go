@@ -11,12 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// handler instance
 type CourierHandler struct {
 	OrderService *services.OrderService
 
 	Ctx context.Context
 }
 
+// @description http handler that receive message from
+// apiserver "matched" type order
+// @param ctx *gin.Context
+// @return
 func (c *CourierHandler) SendOrder(ctx *gin.Context) {
 	var requestJson *types.Order = &types.Order{}
 	if err := ctx.BindJSON(requestJson); err != nil {
@@ -41,6 +46,11 @@ func (c *CourierHandler) SendOrder(ctx *gin.Context) {
 	ctx.String(http.StatusAccepted, "received")
 }
 
+// @description Ths function is used in queue receiver handler.
+// it deserilize message, start a goroutine wait dish is ready,
+// then set its status to finished.
+// @param b []byte message body
+// @return error
 func (c *CourierHandler) HandleMessage(b []byte) error {
 	var requestJson *types.Order = &types.Order{}
 	err := json.Unmarshal(b, &requestJson)

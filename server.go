@@ -110,4 +110,5 @@ func configureRouters(gEngin *gin.Engine, handler *handlers.ServerHandler) {
 	var api = gEngin.Group("/api")
 	api.POST("sendOrder/random", handler.ReceiveOrder)
 	api.POST("sendOrder/fifo", handler.ReceiveOrderFIFO)
+	api.GET("delay/:orderType", handler.QueryAverageDelay)
 }

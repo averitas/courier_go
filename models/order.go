@@ -20,6 +20,7 @@ const (
 	OrderIdPrefix string = "ORDER"
 )
 
+// Order model
 type OrderModel struct {
 	OrderId     string    `gorm:"primaryKey size:32"`
 	OrderType   string    `gorm:"size:32"`

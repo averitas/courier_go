@@ -24,12 +24,16 @@ type OrderService struct {
 	CouriersUrl  []string
 }
 
+// @description Save order to database with given order struct
+// @param order *types.Order order received from api
+// @return error
 func (o *OrderService) SaveOrder(order *types.Order) error {
 	orderModel := &models.OrderModel{
 		Id:          order.Id,
 		PrepTime:    order.PrepTime,
 		Name:        order.Name,
 		OrderStatus: models.OrderStarted,
+		OrderType:   order.OrderType,
 	}
 	err := db.Db.Transaction(func(tx *gorm.DB) error {
 		var erri error
@@ -53,11 +57,18 @@ func (o *OrderService) saveModel(order *models.OrderModel) error {
 	return db.Db.Save(order).Error
 }
 
+// @description Get the single latest order with 'id' in order struct
+// @param order *types.Order order received from api
+// @return error
 func (o *OrderService) GetOrderModel(order *types.Order) (res *models.OrderModel, err error) {
 	err = db.Db.Where("id = ?", order.Id).Last(&res).Error
 	return
 }
 
+// @description This function simulate courier wait kitchen cooking and
+// finish this order. It will wait PrepTime seconds, then set status to finished
+// @param model *models.OrderModel model retrieved from database
+// @return error
 func (o *OrderService) WaitUntilOrderCooked(model *models.OrderModel) (err error) {
 	defer func() {
 		if rcy := recover(); rcy != nil {
@@ -86,6 +97,9 @@ func (o *OrderService) WaitUntilOrderCooked(model *models.OrderModel) (err error
 	return nil
 }
 
+// @description This function send order message to queue
+// @param order *types.Order order received from api
+// @return error
 func (o *OrderService) SendOrderMessage(order *types.Order) error {
 	err := o.QueueManager.Send(order)
 	if err != nil {
@@ -94,6 +108,11 @@ func (o *OrderService) SendOrderMessage(order *types.Order) error {
 	return nil
 }
 
+// @description This function send order message to courier
+// by call courier API directly. It will choose a random courier
+// to send message
+// @param order *types.Order order received from api
+// @return error
 func (o *OrderService) CallRandomCourierAPI(order *types.Order) error {
 	if len(o.CouriersUrl) < 1 {
 		return fmt.Errorf("please configure courier url first")
@@ -127,4 +146,16 @@ func (o *OrderService) CallRandomCourierAPI(order *types.Order) error {
 	}
 
 	return nil
+}
+
+// return average delay value in seconds of requested orderType
+// @param orderType string order type should be "match" or "fifo"
+// @return float32 average delay in seconds
+// @return error
+func (o *OrderService) GetAverageDelayOfType(orderType string) (float32, error) {
+	subQuery := db.Db.Select("DATE_SUB(timediff(updated_at, created_at), INTERVAL prep_time second) AS pickup_delay").
+		Where("order_type = ?", orderType).Table("order_models")
+	var result float32
+	err := db.Db.Select("AVG(tt.pickup_delay) as avgdelay").Table("(?) as tt", subQuery).Pluck("avgdelay", &result).Error
+	return result, err
 }

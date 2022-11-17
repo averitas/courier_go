@@ -3,10 +3,10 @@ GOBUILD=go build
 .PHONY: all clean
 
 all:
-	mkdir -p bin
-	$(GOBUILD) -o bin/apiserver .
-	$(GOBUILD) -o bin/worker ./worker
-	$(GOBUILD) -o bin/tester ./sendOrder
+	mkdir bin
+	$(GOBUILD) -o bin/apiserver.exe .
+	$(GOBUILD) -o bin/worker.exe ./worker
+	$(GOBUILD) -o bin/tester.exe ./sendOrder
 
 clean:
-	rm -fr ./bin
+	rm ./bin

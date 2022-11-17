@@ -16,6 +16,10 @@ type ServerHandler struct {
 	Ctx context.Context
 }
 
+// @description http handler that user can call it
+// to send order with "Matched" dispatch type
+// @param ctx *gin.Context
+// @return
 func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 	var requestJson []*types.Order
 	fmt.Printf("Start to find a random courier\n")
@@ -41,6 +45,10 @@ func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 	ctx.String(http.StatusAccepted, "received")
 }
 
+// @description http handler that user can call it
+// to send order with "FIFO" dispatch type
+// @param ctx *gin.Context
+// @return
 func (s *ServerHandler) ReceiveOrderFIFO(ctx *gin.Context) {
 	var requestJson []*types.Order
 	if err := ctx.BindJSON(&requestJson); err != nil {
@@ -64,4 +72,23 @@ func (s *ServerHandler) ReceiveOrderFIFO(ctx *gin.Context) {
 		}
 	}
 	ctx.String(http.StatusAccepted, "received")
+}
+
+// @description http handler that user can call it
+// to retrieve average dispatch delay time(in milliseconds) of requested type
+// example: GET http://127.0.0.1:8080/api/delay/fifo
+// @param ctx *gin.Context
+// @return
+func (s *ServerHandler) QueryAverageDelay(ctx *gin.Context) {
+	orderType := ctx.Param("orderType")
+	if len(orderType) == 0 {
+		ctx.String(http.StatusBadRequest, fmt.Sprintf("order type [%s] is invalid, please use match or fifo", orderType))
+	}
+
+	average, err := s.OrderService.GetAverageDelayOfType(orderType)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, fmt.Sprintf("query average error: %v", err))
+		return
+	}
+	ctx.String(http.StatusOK, fmt.Sprintf("Average dispatch delay is %v", average*1000))
 }
