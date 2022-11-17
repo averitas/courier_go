@@ -63,7 +63,7 @@ Or we can use API to query delay
 
 Here is the test result:
 
-GET http://url/api/delay/fifo
+GET http://apiserver_url/api/delay/fifo
 
 result:
 ```
@@ -73,7 +73,7 @@ result:
 }
 ```
 
-GET http://url/api/delay/match
+GET http://apiserver_url/api/delay/match
 
 result:
 {
