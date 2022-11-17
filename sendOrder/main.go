@@ -11,6 +11,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/averitas/courier_go/tools/logger"
 	"github.com/averitas/courier_go/types"
 	"github.com/google/uuid"
 	"github.com/splode/fname"
@@ -23,7 +24,7 @@ func main() {
 
 	targetUrl, err := url.Parse(*inputUrl)
 	if err != nil {
-		fmt.Printf("configured url %v is invalid\n", *inputUrl)
+		logger.ErrorLogger.Printf("configured url %v is invalid\n", *inputUrl)
 	}
 	if *testType == "match" {
 		targetUrl.Path = path.Join(targetUrl.Path, "api", "sendOrder", "random")
@@ -59,15 +60,15 @@ func main() {
 
 		req, err := http.NewRequest(http.MethodPost, targetUrl.String(), bytes.NewReader(orderMessage))
 		if err != nil {
-			fmt.Printf("err when SendOrderMessage generate http request to url [%s] error: %v\n", targetUrl.String(), err)
+			logger.ErrorLogger.Printf("err when SendOrderMessage generate http request to url [%s] error: %v\n", targetUrl.String(), err)
 		}
 
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
-			fmt.Printf("err when SendOrderMessage call url [%s] error: %v\n", targetUrl.String(), err)
+			logger.ErrorLogger.Printf("err when SendOrderMessage call url [%s] error: %v\n", targetUrl.String(), err)
 		}
 
-		fmt.Printf("API result is: %v\n", res)
+		logger.InfoLogger.Printf("API result is: %v\n", res)
 
 		time.Sleep(time.Second)
 	}

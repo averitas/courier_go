@@ -35,7 +35,7 @@ func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 		return
 	}
 	for i := 0; i < len(requestJson); i++ {
-		fmt.Printf("save order: %v to DB\n", *requestJson[i])
+		logger.InfoLogger.Printf("save order: %v to DB\n", *requestJson[i])
 		requestJson[i].OrderType = types.OrderTypeMatch
 		err := s.OrderService.SaveOrder(requestJson[i])
 		if err != nil {
@@ -44,7 +44,7 @@ func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, retval)
 			return
 		}
-		fmt.Printf("Start to call random courier api: %v\n", *requestJson[i])
+		logger.InfoLogger.Printf("Start to call random courier api: %v\n", *requestJson[i])
 		err = s.OrderService.CallRandomCourierAPI(requestJson[i])
 		if err != nil {
 			retval.Code = types.CodeFailed
