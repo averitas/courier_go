@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/averitas/courier_go/services"
+	"github.com/averitas/courier_go/tools/logger"
 	"github.com/averitas/courier_go/types"
 	"github.com/gin-gonic/gin"
 )
@@ -22,9 +23,15 @@ type ServerHandler struct {
 // @return
 func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 	var requestJson []*types.Order
-	fmt.Printf("Start to find a random courier\n")
+	logger.InfoLogger.Printf("Start to find a random courier\n")
+	retval := &types.Message{
+		Code:    types.CodeSuccess,
+		Message: "received",
+	}
 	if err := ctx.BindJSON(&requestJson); err != nil {
-		ctx.String(http.StatusBadRequest, err.Error())
+		retval.Code = types.CodeFailed
+		retval.Message = fmt.Sprintf("input json format err: %v", err)
+		ctx.JSON(http.StatusBadRequest, retval)
 		return
 	}
 	for i := 0; i < len(requestJson); i++ {
@@ -32,17 +39,21 @@ func (s *ServerHandler) ReceiveOrder(ctx *gin.Context) {
 		requestJson[i].OrderType = types.OrderTypeMatch
 		err := s.OrderService.SaveOrder(requestJson[i])
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("save order to db error: %v", err))
+			retval.Code = types.CodeFailed
+			retval.Message = fmt.Sprintf("save order to db error: %v", err)
+			ctx.JSON(http.StatusInternalServerError, retval)
 			return
 		}
 		fmt.Printf("Start to call random courier api: %v\n", *requestJson[i])
 		err = s.OrderService.CallRandomCourierAPI(requestJson[i])
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, "error with message: "+err.Error())
+			retval.Code = types.CodeFailed
+			retval.Message = fmt.Sprintf("save order to db error: %v", err)
+			ctx.JSON(http.StatusInternalServerError, retval)
 			return
 		}
 	}
-	ctx.String(http.StatusAccepted, "received")
+	ctx.JSON(http.StatusAccepted, "received")
 }
 
 // @description http handler that user can call it
@@ -55,23 +66,32 @@ func (s *ServerHandler) ReceiveOrderFIFO(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
+	retval := &types.Message{
+		Code:    types.CodeSuccess,
+		Message: "received",
+	}
 	for i := 0; i < len(requestJson); i++ {
-		fmt.Printf("save order: %v to DB\n", *requestJson[i])
+		logger.InfoLogger.Printf("save order: %v to DB\n", *requestJson[i])
 		requestJson[i].OrderType = types.OrderTypeFIFO
 		err := s.OrderService.SaveOrder(requestJson[i])
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("save order to db error: %v", err))
+			retval.Code = types.CodeFailed
+			retval.Message = fmt.Sprintf("save order to db error: %v", err)
+			ctx.JSON(http.StatusInternalServerError, retval)
 			return
 		}
 
-		fmt.Printf("send message to queue: %v\n", *requestJson[i])
+		logger.InfoLogger.Printf("send message to queue: %v\n", *requestJson[i])
 		err = s.OrderService.SendOrderMessage(requestJson[i])
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, fmt.Sprintf("send message error: %v", err))
+			retval.Code = types.CodeFailed
+			retval.Message = fmt.Sprintf("send message error: %v", err)
+			ctx.JSON(http.StatusInternalServerError, retval)
 			return
 		}
 	}
-	ctx.String(http.StatusAccepted, "received")
+
+	ctx.JSON(http.StatusAccepted, retval)
 }
 
 // @description http handler that user can call it
@@ -81,14 +101,23 @@ func (s *ServerHandler) ReceiveOrderFIFO(ctx *gin.Context) {
 // @return
 func (s *ServerHandler) QueryAverageDelay(ctx *gin.Context) {
 	orderType := ctx.Param("orderType")
+	retval := &types.Message{
+		Code:    types.CodeSuccess,
+		Message: "received",
+	}
 	if len(orderType) == 0 {
-		ctx.String(http.StatusBadRequest, fmt.Sprintf("order type [%s] is invalid, please use match or fifo", orderType))
+		retval.Code = types.CodeFailed
+		retval.Message = fmt.Sprintf("order type [%s] is invalid, please use match or fifo", orderType)
+		ctx.JSON(http.StatusBadRequest, retval)
 	}
 
 	average, err := s.OrderService.GetAverageDelayOfType(orderType)
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, fmt.Sprintf("query average error: %v", err))
+		retval.Code = types.CodeFailed
+		retval.Message = fmt.Sprintf("query average error: %v", err)
+		ctx.JSON(http.StatusInternalServerError, retval)
 		return
 	}
-	ctx.String(http.StatusOK, fmt.Sprintf("Average dispatch delay is %v", average*1000))
+	retval.Message = fmt.Sprintf("Average dispatch delay is %v", average*1000)
+	ctx.JSON(http.StatusOK, retval)
 }

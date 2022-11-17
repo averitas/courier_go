@@ -14,6 +14,7 @@ import (
 	"github.com/averitas/courier_go/handlers"
 	"github.com/averitas/courier_go/services"
 	"github.com/averitas/courier_go/tools"
+	"github.com/averitas/courier_go/tools/logger"
 	"github.com/averitas/courier_go/types"
 	"github.com/gin-gonic/gin"
 )
@@ -41,11 +42,11 @@ func (s *Server) StartAndWait(ctx context.Context) {
 			s.waitGroup.Done()
 		}()
 		err := s.queueManager.StartReceiver(ctx, func(b []byte) error {
-			fmt.Printf("Received message: %s\n", string(b))
+			logger.InfoLogger.Printf("Received message: %s\n", string(b))
 			return s.handler.HandleMessage(b)
 		})
 		if err != nil {
-			fmt.Printf("queue receiver abort with error %v\n", err)
+			logger.ErrorLogger.Printf("queue receiver abort with error %v\n", err)
 			panic("queue receiver error " + err.Error())
 		}
 	}()
@@ -54,13 +55,13 @@ func (s *Server) StartAndWait(ctx context.Context) {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := s.serverInst.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("Could not start listener %v\n", err)
+			logger.ErrorLogger.Printf("Could not start listener %v\n", err)
 		}
 	}()
 	<-ctx.Done()
 	ctx1, cancel := context.WithTimeout(ctx, 2*time.Second)
 	if err := s.serverInst.Shutdown(ctx1); err != nil {
-		fmt.Printf("Server force shutdown with error: %v\n", err)
+		logger.ErrorLogger.Printf("Server force shutdown with error: %v\n", err)
 	}
 	cancel()
 
@@ -69,7 +70,7 @@ func (s *Server) StartAndWait(ctx context.Context) {
 
 	// wait api server and queue sender
 	s.waitGroup.Wait()
-	fmt.Println("Server stopped")
+	logger.InfoLogger.Println("Server stopped")
 }
 
 func CreateServer(addr, queueConnString, dsn string) *Server {
@@ -132,7 +133,7 @@ func main() {
 		"mysql connect string")
 	flag.Parse()
 
-	fmt.Printf("Start with port: %s\n", *addr)
+	logger.InfoLogger.Printf("Start with port: %s\n", *addr)
 
 	server := CreateServer(*addr, *mq, *dsn)
 
@@ -141,7 +142,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Println("Received int signal, try to shutdown gracefully")
+			logger.InfoLogger.Println("Received int signal, try to shutdown gracefully")
 			cancel()
 			break
 		}

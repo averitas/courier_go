@@ -11,6 +11,7 @@ import (
 	"github.com/averitas/courier_go/handlers"
 	"github.com/averitas/courier_go/services"
 	"github.com/averitas/courier_go/tools"
+	"github.com/averitas/courier_go/tools/logger"
 	"github.com/averitas/courier_go/types"
 	"github.com/gin-gonic/gin"
 )
@@ -43,13 +44,13 @@ func (s *Server) StartAndWait(ctx context.Context) {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := s.serverInst.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("Could not start listener %v\n", err)
+			logger.InfoLogger.Printf("Could not start listener %v\n", err)
 		}
 	}()
 	<-ctx.Done()
 	ctx1, cancel := context.WithTimeout(ctx, 2*time.Second)
 	if err := s.serverInst.Shutdown(ctx1); err != nil {
-		fmt.Printf("Server force shutdown with error: %v\n", err)
+		logger.InfoLogger.Printf("Server force shutdown with error: %v\n", err)
 	}
 	cancel()
 
@@ -58,7 +59,7 @@ func (s *Server) StartAndWait(ctx context.Context) {
 
 	// wait api server and queue sender
 	s.waitGroup.Wait()
-	fmt.Println("Server stopped")
+	logger.InfoLogger.Println("Server stopped")
 }
 
 func CreateServer(addr, queueConnString, dsn string, couriers []string) *Server {

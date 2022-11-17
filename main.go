@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
+
+	"github.com/averitas/courier_go/tools/logger"
 )
 
 // run api
@@ -32,7 +33,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Println("Received int signal, try to shutdown gracefully")
+			logger.InfoLogger.Println("Received int signal, try to shutdown gracefully")
 			cancel()
 			break
 		}

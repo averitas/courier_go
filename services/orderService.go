@@ -15,6 +15,7 @@ import (
 	"github.com/averitas/courier_go/db"
 	"github.com/averitas/courier_go/models"
 	"github.com/averitas/courier_go/tools"
+	"github.com/averitas/courier_go/tools/logger"
 	"github.com/averitas/courier_go/types"
 	"gorm.io/gorm"
 )
@@ -82,7 +83,7 @@ func (o *OrderService) WaitUntilOrderCooked(model *models.OrderModel) (err error
 	if err != nil {
 		return fmt.Errorf("order set status to cooking err: %v", err)
 	}
-	fmt.Printf("Order [%s] started cooking\n", model.OrderId)
+	logger.InfoLogger.Printf("Order [%s] started cooking\n", model.OrderId)
 
 	// wait order
 	time.Sleep(time.Duration(model.PrepTime) * time.Second)
@@ -93,7 +94,7 @@ func (o *OrderService) WaitUntilOrderCooked(model *models.OrderModel) (err error
 	if err != nil {
 		return fmt.Errorf("order set status to finished err: %v", err)
 	}
-	fmt.Printf("Order [%s] done!\n", model.OrderId)
+	logger.InfoLogger.Printf("Order [%s] done!\n", model.OrderId)
 	return nil
 }
 

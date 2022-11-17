@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/averitas/courier_go/tools/logger"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -54,9 +55,9 @@ Loop:
 			r.SendMessage(msg)
 		}
 	}
-	fmt.Println("signal received, start to stop queue sender")
+	logger.InfoLogger.Println("signal received, start to stop queue sender")
 	r.reset()
-	fmt.Println("background queue sender stopped")
+	logger.InfoLogger.Println("background queue sender stopped")
 }
 
 func (r *RabbitMqManager) StartReceiver(ctx context.Context, handler MessageHandler) (err error) {
@@ -80,14 +81,14 @@ RLoop:
 				return handler(msg.Body)
 			})
 			if err != nil {
-				fmt.Printf("call wrap handler of message [%v] error: %v\n", string(msg.Body), err)
+				logger.ErrorLogger.Printf("call wrap handler of message [%v] error: %v\n", string(msg.Body), err)
 			}
 		}
 	}
 
-	fmt.Println("signal received, start to stop queue receiver")
+	logger.InfoLogger.Println("signal received, start to stop queue receiver")
 	r.reset()
-	fmt.Println("background queue receiver stopped")
+	logger.InfoLogger.Println("background queue receiver stopped")
 
 	return
 }

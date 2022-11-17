@@ -46,7 +46,7 @@ If we have two couriers running, we can start server like this.
 ``` 
 
 ### Start tester to call api
-
+test will send 2 orders per seconds, as the homework required.
 ```
 ./tester -type=match # test of Matched dispatch API
 ./tester -type=fifo # test of First-in-first-out​ dispatch API
@@ -58,3 +58,30 @@ after running tester, we could run sql in db to query average
 select AVG(tt.pickup_delay) as avg_pickup_delay from
 (select order_id, DATE_SUB(timediff(updated_at, created_at), INTERVAL prep_time second) as pickup_delay from order_models) AS tt
 ```
+
+Or we can use API to query delay
+
+Here is the test result:
+
+GET http://url/api/delay/fifo
+
+result:
+```
+{
+    "Code": 0,
+    "Message": "Average dispatch delay is 107.5885"
+}
+```
+
+GET http://url/api/delay/match
+
+result:
+{
+    "Code": 0,
+    "Message": "Average dispatch delay is 79.5463"
+}
+
+## Result
+
+As previous result, the test shows that Matched dispatch strategies will have 79.5463 ms average delay.
+First-in-first-out​ dispatch strategies will have 107.5885 ms average delay.
