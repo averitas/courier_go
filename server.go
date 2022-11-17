@@ -7,7 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/averitas/courier_go/db"
 	"github.com/averitas/courier_go/handlers"
+	"github.com/averitas/courier_go/services"
 	"github.com/averitas/courier_go/tools"
 	"github.com/averitas/courier_go/types"
 	"github.com/gin-gonic/gin"
@@ -59,7 +61,7 @@ func (s *Server) StartAndWait(ctx context.Context) {
 	fmt.Println("Server stopped")
 }
 
-func CreateServer(addr string, queueConnString string) *Server {
+func CreateServer(addr, queueConnString, dsn string, couriers []string) *Server {
 	var router = gin.Default()
 
 	// init thrid party tools managers
@@ -68,9 +70,18 @@ func CreateServer(addr string, queueConnString string) *Server {
 		ConnString: queueConnString,
 	}
 
+	// init db
+	db.InitDb(dsn)
+
+	// init Service
+	orderService := &services.OrderService{
+		QueueManager: queueManager,
+		CouriersUrl:  couriers,
+	}
+
 	// init api server controller
 	handler := &handlers.ServerHandler{
-		QueueManager: queueManager,
+		OrderService: orderService,
 	}
 
 	// init api routers

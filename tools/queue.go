@@ -56,7 +56,7 @@ Loop:
 	}
 	fmt.Println("signal received, start to stop queue sender")
 	r.reset()
-	fmt.Println("signal received, background queue sender stopped")
+	fmt.Println("background queue sender stopped")
 }
 
 func (r *RabbitMqManager) StartReceiver(ctx context.Context, handler MessageHandler) (err error) {
@@ -87,7 +87,7 @@ RLoop:
 
 	fmt.Println("signal received, start to stop queue receiver")
 	r.reset()
-	fmt.Println("signal received, background queue receiver stopped")
+	fmt.Println("background queue receiver stopped")
 
 	return
 }
