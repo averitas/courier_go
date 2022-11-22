@@ -84,4 +84,19 @@ result:
 ## Result
 
 As previous result, the test shows that Matched dispatch strategies will have 79.5463 ms average delay.
-First-in-first-out​ dispatch strategies will have 107.5885 ms average delay.
+First-in-first-out​ dispatch strategies will have 107.5885 ms average delay. The reason of longer delay of FIFO
+is because we imported rabbitmq as middleware to achieve FIFO distribute messages.
+
+## Unit test
+
+First we should generate mock package with gomock
+```
+go install github.com/golang/mock/mockgen
+
+mkdir mocks
+mockgen -destination mocks\repoMock.go -package mocks github.com/averitas/courier_go/repository IOrderRepo
+mockgen -destination mocks\repoMock.go -package mocks github.com/averitas/courier_go/tools HttpClient,IQueueManager
+```
+
+Then we can run ``go test`` under target folders
+Because all business logic is inside `services` folder, so I only created unit test for services module

@@ -9,6 +9,7 @@ import (
 
 	"github.com/averitas/courier_go/db"
 	"github.com/averitas/courier_go/handlers"
+	"github.com/averitas/courier_go/repository"
 	"github.com/averitas/courier_go/services"
 	"github.com/averitas/courier_go/tools"
 	"github.com/averitas/courier_go/tools/logger"
@@ -76,8 +77,10 @@ func CreateServer(addr, queueConnString, dsn string, couriers []string) *Server 
 
 	// init Service
 	orderService := &services.OrderService{
+		HttpClient:   http.DefaultClient,
 		QueueManager: queueManager,
 		CouriersUrl:  couriers,
+		Repo:         &repository.OrderRepo{},
 	}
 
 	// init api server controller
